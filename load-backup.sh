@@ -5,4 +5,5 @@ rm -r images
 cp ~/vinga-music-stream.bak/db.json db.json
 cp -r ~/vinga-music-stream.bak/audio audio
 cp -r ~/vinga-music-stream.bak/images images
+cp -r ~/vinga-music-stream.bak/cdn cdn
 echo "Loaded backup!"

@@ -17,6 +17,10 @@ if (fs.existsSync("db.json")) {
     fs.writeFileSync("db.json", "{}")
 }
 
+if (!fs.existsSync("cdn")) {
+    fs.mkdirSync("cdn")
+}
+
 async function dlArtwork(url, id) {
     if (!fs.existsSync("images")) {
         fs.mkdirSync("images")

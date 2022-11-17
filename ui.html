@@ -94,8 +94,40 @@
             cursor: pointer;
         }
 
+        #create-playlist-screen {
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: black;
+            margin-left: 28px;
+            display: none;
+        }
+
+        #playlist-modal {
+            width: calc(60% - 25px);
+            height: 70%;
+            position: fixed;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            margin: auto;
+            background: #121212;
+            border-radius: 12px;
+            padding: 0px;
+            padding-left: 25px;
+            display: none;
+            user-select: none;
+        }
+
         .progress-controls {
             margin-left: 50px;
+        }
+
+        .playlist-data-holder:hover {
+            background: rgba(255, 255, 255, 0.06) !important;
         }
     </style>
     <title>Vinga Music Stream</title>
@@ -118,14 +150,113 @@
     </div>
     <input id="search">
     <div id="results"></div>
+    <button id="create-playlist-button">Create Playlist</button><br><br>
+    <div id="playlists"></div>
     <img id="art">
     <span id="name"></span>
+    <div id="create-playlist-screen">
+        <h1>Create a new playlist</h1>
+        <input id="CPS-NAME" placeholder="Playlist name" type="text"><br><br>
+        <button id="save-playlist-button">Create Playlist</button>
+    </div>
+    <div id="playlist-modal">
+        <h1 id="PM-NAME">PLAYLIST NAME</h1>
+    </div>
+
     <script>
         var noProgressUpdate = false;
         var likeButtonDisabled = true;
         var likes = [];
+        var playlists = [];
+        function openPlaylistScreen(id) {
+            var pl = null;
+            for (let i = 0; i < playlists.length; i++) {
+                if (playlists[i].id === id) {
+                    pl = playlists[i];
+                    break;
+                }
+            }
+            if (pl === null) return;
+            document.getElementById("PM-NAME").innerText = pl.name;
+            document.getElementById("playlist-modal").style.display = "block";
+        }
+        function refreshPlaylists() {
+            var holders = document.createElement("div");
+
+            document.getElementById("playlists").innerHTML = "";
+
+            for (let i = 0; i < playlists.length; i++) {
+                const pl = playlists[i];
+
+                var holder = document.createElement("div");
+                holder.style.borderRadius = "8px";
+                holder.style.background = "rgba(255, 255, 255, 0.04)";
+                holder.style.width = "400px";
+                holder.style.height = "80px";
+                holder.style.cursor = "pointer";
+                holder.style.transition = ".15s";
+                holder.style.display = "flex";
+                holder.style.alignItems = "center";
+                holder.style.userSelect = "none";
+                holder.className = "playlist-data-holder";
+                holder.onclick = () => {
+                    openPlaylistScreen(pl.id);
+                }
+                if (i === 0) {
+                    holder.style.marginTop = "0";
+                } else {
+                    holder.style.marginTop = "10px";
+                }
+
+                var image = document.createElement("img");
+                image.style.width = "64px";
+                image.style.height = "64px";
+                image.style.marginLeft = "8px";
+                image.style.borderRadius = "6px";
+                image.style.marginRight = "20px";
+                image.style.border = "none";
+                image.src = pl.image === null ? "/cdn/playlist_not_found.png" : pl.image;
+
+                var basicDetailsContainer = document.createElement("div");
+                basicDetailsContainer.style.display = "flex"
+                basicDetailsContainer.style.justifyContent = "center";
+                basicDetailsContainer.style.flexDirection = "column";
+                basicDetailsContainer.style.height = "100%";
+
+                var name = document.createElement("span");
+                name.innerText = pl.name;
+                name.style.fontWeight = "bold";
+                name.style.fontSize = "20px";
+                name.style.maxWidth = "200px";
+                name.style.overflow = "hidden";
+                name.style.textOverflow = "ellipsis";
+                name.style.whiteSpace = "nowrap";
+
+                var desc = document.createElement("span");
+                desc.innerText = pl.description;
+                desc.style.fontSize = "15px";
+                desc.style.paddingTop = "2.5px";
+                desc.style.maxWidth = "280px";
+                desc.style.overflow = "hidden";
+                desc.style.textOverflow = "ellipsis";
+                desc.style.whiteSpace = "nowrap";
+
+                basicDetailsContainer.appendChild(name);
+                if (pl.description !== null) basicDetailsContainer.appendChild(desc);
+
+                holder.appendChild(image);
+                holder.appendChild(basicDetailsContainer);
+
+                holders.appendChild(holder)
+            }
+
+            document.getElementById("playlists").appendChild(holders);
+        }
         function loadSavedData() {
             likes = localStorage.getItem("likes") === null ? [] : JSON.parse(localStorage.getItem("likes"));
+            playlists = localStorage.getItem("playlists") === null ? [] : JSON.parse(localStorage.getItem("playlists"));
+            
+            refreshPlaylists();
         }
         function isCurrentSongLiked() {
             const songId = getSongMeta().id;
@@ -158,6 +289,25 @@
             refreshSongDataDisplays();
         }
         loadSavedData();
+        function createPlaylist(name) {
+            var playlistData = {
+                name: name,
+                description: null,
+                image: null,
+                createdAt: new Date().getTime(),
+                id: Math.round(Math.random() * 9e9)
+            }
+            playlists.push(playlistData);
+            localStorage.setItem("playlists", JSON.stringify(playlists));
+            refreshPlaylists();
+            document.getElementById("create-playlist-screen").style.display = "none";
+        }
+        document.getElementById("save-playlist-button").onclick = () => {
+            createPlaylist(document.getElementById("CPS-NAME").value);
+        }
+        document.getElementById("create-playlist-button").onclick = () => {
+            document.getElementById("create-playlist-screen").style.display = "block";
+        }
         document.getElementById("progress").onclick = (e) => {
             if (!isNaN(document.getElementById("player").duration)) {
                 var elmnt = document.getElementById("dragger");

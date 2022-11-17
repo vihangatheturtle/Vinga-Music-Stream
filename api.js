@@ -164,6 +164,10 @@ server.get("/random", (req, res) => {
     res.status(200).json(db[s]);
 });
 
+server.get("/cdn/:name", (req, res) => {
+    res.status(200).sendFile(path.resolve("cdn/"+req.params.name));
+});
+
 server.get("/audio/:id", (req, res) => {
     res.status(200).sendFile(path.resolve("audio/"+req.params.id+".mp3"));
 });
