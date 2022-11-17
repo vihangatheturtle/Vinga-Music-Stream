@@ -16,7 +16,7 @@ if (!fs.existsSync("db.json")) {
     db = JSON.parse(fs.readFileSync("db.json").toString());
 }
 
-const PORT = 3013;
+const PORT = 80;
 const similarityConst = 0.4;
 const server = express();
 const adminPin = "vingaispog";
