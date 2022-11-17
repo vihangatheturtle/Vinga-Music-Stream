@@ -262,7 +262,7 @@
         var nextSongData = null;
         document.getElementById("player").onended = () => {
             hideAlbumArt();
-            document.getElementById("s1").src = "audio/"+nextSongData.id;
+            document.getElementById("s1").src = "/audio/"+nextSongData.id;
             document.getElementById("player").load();
             setSongMeta(nextSongData);
             setTimeout(() => {
@@ -292,7 +292,7 @@
                                 hideAlbumArt();
                                 setSongMeta(el);
                                 setTimeout(() => {
-                                    document.getElementById("s1").src = "audio/"+el.id;
+                                    document.getElementById("s1").src = "/audio/"+el.id;
                                     document.getElementById("player").load();
                                     document.getElementById("player").play();
                                 }, 300);
