@@ -159,6 +159,7 @@
         function refreshSongDataDisplays() {
             document.getElementById("song-name").innerText = getSongMeta().name;
             document.getElementById("album-art").src = "/art/" + getSongMeta().art;
+            document.title = getSongMeta().name;
             refreshSongTime();
         }
         refreshSongDataDisplays();
