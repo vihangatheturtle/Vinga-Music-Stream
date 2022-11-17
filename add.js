@@ -35,7 +35,7 @@ async function dlArtwork(url, id) {
     }).end();
 }
 
-async function getVideo(videoID, name, art, cb) {
+async function getVideo(videoID, name, art, cb, progresscb = null) {
     if (videoID.includes("?")) {
         videoID = videoID.split("?")[1]
     }
@@ -44,6 +44,7 @@ async function getVideo(videoID, name, art, cb) {
     if (!fs.existsSync("audio")) {
         fs.mkdirSync("audio")
     }
+    if (progresscb) progresscb("Fetching audio information from YouTube");
     let info = await ytdl.getInfo(videoID);
     var basicInfo = (await ytdl.getBasicInfo(videoID)).videoDetails;
     let audioFormats = ytdl.filterFormats(info.formats, 'audioonly');
@@ -54,6 +55,7 @@ async function getVideo(videoID, name, art, cb) {
             highestQuality = a
         }
     }
+    if (progresscb) progresscb("Downloading audio as mp3");
     const audio = ytdl(videoID, { filter: format => format.itag === highestQuality.itag })
     const aid = uuidv4();
     const tid = uuidv4();
@@ -69,12 +71,14 @@ async function getVideo(videoID, name, art, cb) {
     .audioBitrate(highestQuality.audioBitrate)
     .save(`audio/${dbEntry.id}.mp3`)
     .on('progress', p => {
+        if (progresscb) progresscb(`${p.targetSize}kb downloaded`);
         readline.cursorTo(process.stdout, 0);
         process.stdout.write(`${p.targetSize}kb downloaded`);
     })
     .on('end', async () => {
         await dlArtwork(art, dbEntry.art)
         console.log(`\nDownload complete, took ${(Date.now() - start) / 1000}s`);
+        if (progresscb) progresscb(`"${dbEntry.name}" added to db`);
         audioDB[dbEntry.id] = dbEntry
         cb();
     });
@@ -114,4 +118,9 @@ setInterval(() => {
     }
 }, 500);
 
-addSong();
+// Uncomment this to manually add songs
+// addSong();
+
+module.exports = {
+    addSong: getVideo
+}

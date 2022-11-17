@@ -471,5 +471,54 @@
         "length": "207",
         "art": "bda799743e15",
         "bitrate": 128
+    },
+    "5245beebb89f": {
+        "id": "5245beebb89f",
+        "name": " Sam Smith - Unholy Ft. Kim Petras ",
+        "length": "158",
+        "art": "03c936fcef29",
+        "bitrate": 160
+    },
+    "53de0eca6b66": {
+        "id": "53de0eca6b66",
+        "name": "David Guetta & Bebe Rexha - I'm Good (Blue)",
+        "length": "176",
+        "art": "9feddab6eadb",
+        "bitrate": 160
+    },
+    "54af102f046c": {
+        "id": "54af102f046c",
+        "name": " Tiësto - 10:35 Ft. Tate McRae ",
+        "length": "173",
+        "art": "59907ffef35f",
+        "bitrate": 160
+    },
+    "a7667e5a8c2c": {
+        "id": "a7667e5a8c2c",
+        "name": "Taylor Swift - Anti-Hero",
+        "length": "204",
+        "art": "5eaa2de7f9a2",
+        "bitrate": 160
+    },
+    "b3e1ac0a5680": {
+        "id": "b3e1ac0a5680",
+        "name": "Joel Corry & Tom Grennan - Lionheart",
+        "length": "188",
+        "art": "f80eddf8cdd7",
+        "bitrate": 160
+    },
+    "c8586d5751d1": {
+        "id": "c8586d5751d1",
+        "name": "P!NK - Never Gonna Not Dance Again",
+        "length": "226",
+        "art": "edf2bc6f97c1",
+        "bitrate": 160
+    },
+    "797b6655818f": {
+        "id": "797b6655818f",
+        "name": "Meghan Trainor - Made You Look",
+        "length": "136",
+        "art": "7a1de23b0f11",
+        "bitrate": 160
     }
 }

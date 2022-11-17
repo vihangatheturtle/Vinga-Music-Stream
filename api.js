@@ -2,6 +2,11 @@ const express = require("express");
 const fs = require("fs");
 const {closest} = require('fastest-levenshtein');
 const path = require("path");
+const bodyParser = require("body-parser");
+const {addSong} = require("./add");
+const { 
+    v4: uuidv4,
+} = require('uuid');
 
 var db = {};
 
@@ -14,6 +19,12 @@ if (!fs.existsSync("db.json")) {
 const PORT = 3013;
 const similarityConst = 0.4;
 const server = express();
+const adminPin = "vingaispog";
+
+server.use(bodyParser.json());
+
+var adminSessionTokens = [];
+var dls = {};
 
 function editDistance(s1, s2) {
     s1 = s1.toLowerCase();
@@ -165,6 +176,91 @@ server.get("/search/:query", (req, res) => {
     var results = queryLocalDB(req.params.query);
     res.status(200).json(results);
 });
+
+server.get("/admin/auth/:pwd", (req, res) => {
+    const pwd = req.params.pwd;
+
+    if (pwd != adminPin) {
+        return res.status(401).json({
+            error: true,
+            message: "Invalid admin password"
+        });
+    }
+
+    var token = uuidv4();
+
+    adminSessionTokens.push(token);
+
+    res.status(200).json({
+        error: false,
+        token: token
+    });
+})
+
+server.get("/admin/add/:pwd", (req, res) => {
+    const pwd = req.params.pwd;
+
+    if (pwd != adminPin) {
+        return res.status(401).redirect("/ui");
+    }
+
+    res.status(200).send(fs.readFileSync("add.html").toString());
+})
+
+server.get("/admin/dlstate/:pwd/:dlid", (req, res) => {
+    const pwd = req.params.pwd;
+    const dlid = req.params.dlid;
+
+    if (!adminSessionTokens.includes(pwd)) {
+        return res.status(401).json({
+            error: true,
+            message: "Invalid admin token"
+        })
+    }
+
+    if (dls[dlid] !== undefined) {
+        var error = dls[dlid].includes("failed");
+        return res.status(200).json({
+            error: error,
+            state: dls[dlid]
+        })
+    } else {
+        return res.status(200).json({
+            error: error,
+            state: "Download not found"
+        })
+    }
+})
+
+server.post("/admin/add/:pwd", (req, res) => {
+    const pwd = req.params.pwd;
+    const b = req.body;
+
+    if (!adminSessionTokens.includes(pwd)) {
+        return res.status(401).json({
+            error: true,
+            message: "Invalid admin token"
+        })
+    }
+
+    if (b.title !== "" && b.title !== undefined && b.link !== "" && b.link !== undefined && b.art !== "" && b.art !== undefined) {
+        var dlid = uuidv4();
+        dls[dlid] = "Waiting for download to start";
+        res.status(200).json({
+            error: false,
+            dlid: dlid
+        })
+        // getVideo(videoID: any, name: any, art: any, cb: any, progresscb?: null)
+        addSong(b.link, b.title, b.art, () => {}, (d) => {
+            dls[dlid] = d;
+        })
+    } else {
+        return res.status(400).json({
+            error: true,
+            message: "Invalid song data"
+        })
+    }
+})
 
 server.listen(PORT, () => {
     console.log("Listening on port", PORT)
