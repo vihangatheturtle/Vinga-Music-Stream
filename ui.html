@@ -160,6 +160,19 @@
             document.getElementById("song-name").innerText = getSongMeta().name;
             document.getElementById("album-art").src = "/art/" + getSongMeta().art;
             document.title = getSongMeta().name;
+            const songNameSections = getSongMeta().name.toString().split(" - ");
+            if (songNameSections[0] !== undefined && songNameSections[1] !== undefined) {
+                const songArtist = songNameSections[1].includes(" Ft. ") ? songNameSections[0].split(" &").join(",") + ", " + songNameSections[1].split(" Ft. ")[1].split(" &").join(",") : songNameSections[0].split(" &").join(",");
+                const songName = songNameSections[1].includes(" Ft. ") ? songNameSections[1].split(" Ft.")[0] : songNameSections[1];
+                console.log("Playing", songName, "by", songArtist);
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: songName,
+                    artist: songArtist,
+                    artwork: [
+                        { src: location.protocol+"//"+location.host+"/art/"+getSongMeta().art,   sizes: '300x300',   type: 'image/png' },
+                    ]
+                });
+            }
             refreshSongTime();
         }
         refreshSongDataDisplays();
