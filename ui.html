@@ -1,0 +1,327 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        html,
+        body {
+            padding: 10px;
+            background: black;
+            font-family: Arial, Helvetica, sans-serif;
+            color: white;
+        }
+
+        #search {
+            padding: 2px;
+        }
+
+        #results {
+            padding: 6px;
+        }
+
+        #player {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: transparent;
+        }
+
+        #playerContent {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: black;
+        }
+
+        #progress {
+            background-color: rgba(255, 255, 255, 0.15);
+            width: calc(100% - 100px);
+            height: 8px;
+            position: absolute;
+            bottom: 50px;
+            /* left: 200px; */
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #progress-tracker {
+            background-color: royalblue;
+            border-radius: 4px;
+            width: 0.6%;
+            height: 100%;
+            transition: .3s;
+        }
+
+        #dragger {
+            width: 12px;
+            height: 12px;
+            background-color: white;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            margin: auto;
+            left: 0%;
+            border-radius: 50%;
+            transition: .3s;
+            cursor: pointer;
+        }
+
+        #song-time {
+            position: absolute;
+            right: 55px;
+        }
+
+        #album-art {
+            width: 200px;
+            height: 200px;
+            border-radius: 10px;
+            position: absolute;
+            top: -220px;
+            transition: .3s;
+            opacity: 0;
+        }
+
+        .progress-controls {
+            margin-left: 50px;
+        }
+    </style>
+    <title>Vinga Music Stream</title>
+</head>
+<body>
+    <div id="playerContent">
+        <audio id="player" style="display: none;">
+            <source id="s1" type="audio/mpeg">
+            Your browser does not support audio playback.
+        </audio>
+        <div class="progress-controls">
+            <img id="album-art">
+            <span id="song-name"></span>
+            <span id="song-time"></span>
+            <div id="progress">
+                <div id="progress-tracker"></div>
+                <div id="dragger"></div>
+            </div>
+        </div>
+    </div>
+    <input id="search">
+    <div id="results"></div>
+    <img id="art">
+    <span id="name"></span>
+    <script>
+        var noProgressUpdate = false;
+        document.getElementById("progress").onclick = (e) => {
+            if (!isNaN(document.getElementById("player").duration)) {
+                var elmnt = document.getElementById("dragger");
+                var track = document.getElementById("progress");
+                var handle = document.getElementById("progress-tracker");
+                var movement = e.clientX - 50;
+                if (movement < 0) {
+                    movement = 0;
+                } else if (movement > (track.clientWidth - 12)) {
+                    movement = track.clientWidth - 12;
+                }
+                elmnt.style.left = movement + "px";
+                handle.style.width = (movement + 6) + "px";
+                var newP = (elmnt.style.left.split("px")[0] / (track.clientWidth - 12));
+                document.getElementById("player").currentTime = (document.getElementById("player").duration * newP)
+            }
+        }
+        function refreshSongTime() {
+            if (!isNaN(document.getElementById("player").duration)) {
+                var sec = Math.floor(document.getElementById("player").currentTime);
+                var minutes = Math.floor(sec / 60).toString();
+                var seconds = (sec - minutes * 60).toString();
+                if (minutes.length == 1) {
+                    minutes = "0" + minutes
+                }
+                if (seconds.length == 1) {
+                    seconds = "0" + seconds
+                }
+
+                var sec1 = Math.floor(document.getElementById("player").duration);
+                var minutes1 = Math.floor(sec1 / 60).toString();
+                var seconds1 = (sec1 - minutes1 * 60).toString();
+                if (minutes1.length == 1) {
+                    minutes1 = "0" + minutes1
+                }
+                if (seconds1.length == 1) {
+                    seconds1 = "0" + seconds1
+                }
+
+                document.getElementById("song-time").innerText = minutes + ":" + seconds + " / " + minutes1 + ":" + seconds1;
+            }
+        }
+        setInterval(refreshSongTime, 100);
+        function refreshSongDataDisplays() {
+            document.getElementById("song-name").innerText = getSongMeta().name;
+            document.getElementById("album-art").src = "/art/" + getSongMeta().art;
+            refreshSongTime();
+        }
+        refreshSongDataDisplays();
+        function hideAlbumArt() {
+            document.getElementById("album-art").style.opacity = 0;
+            document.getElementById("album-art").style.top = "-210px";
+        }
+        function showAlbumArt() {
+            document.getElementById("album-art").style.opacity = 1;
+            document.getElementById("album-art").style.top = "-220px";
+        }
+        function dragElement(elmnt, track, handle, setPTime = false) {
+            elmnt.onmousedown = dragMouseDown;
+
+            function dragMouseDown(e) {
+                if (setPTime) {
+                    if (isNaN(document.getElementById("player").duration)) {
+                        return
+                    }
+                }
+                e = e || window.event;
+                e.preventDefault();
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+                noProgressUpdate = true;
+                elmnt.style.transition = "0s";
+                handle.style.transition = "0s";
+            }
+
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                var movement = e.clientX - 50;
+                if (movement < 0) {
+                    movement = 0;
+                } else if (movement > (track.clientWidth - 12)) {
+                    movement = track.clientWidth - 12
+                }
+                elmnt.style.left = movement + "px"
+                handle.style.width = (movement + 6) + "px"
+            }
+
+            function closeDragElement() {
+                try {
+                    var newP = (elmnt.style.left.split("px")[0] / (track.clientWidth - 12));
+
+                    if (setPTime) {
+                        document.getElementById("player").currentTime = (document.getElementById("player").duration * newP)
+                    }
+                } catch { }
+
+                document.onmouseup = null;
+                document.onmousemove = null;
+                noProgressUpdate = false;
+                elmnt.style.transition = ".3s";
+                handle.style.transition = ".3s";
+            }
+        }
+        dragElement(document.getElementById("dragger"), document.getElementById("progress"), document.getElementById("progress-tracker"), true);
+        document.getElementById("player").onplay = () => {
+            showAlbumArt();
+            refreshSongDataDisplays();
+            fetch("/random")
+            .then(r => r.json())
+            .then(r => {
+                nextSongData = r;
+            });
+        }
+        document.getElementById("player").ontimeupdate = (d) => {
+            var percentPlayed = parseFloat(((document.getElementById("player").currentTime / document.getElementById("player").duration) * 100).toFixed(4));
+            if (isNaN(percentPlayed)) {
+                percentPlayed = 0.6;
+            }
+            if (percentPlayed > 0 && percentPlayed < 0.6) {
+                percentPlayed = 0.6
+            }
+            if (!noProgressUpdate) {
+                document.getElementById("progress-tracker").style.width = percentPlayed + "%"
+                document.getElementById("dragger").style.left = (percentPlayed - 0.6) + "%"
+            }
+        }
+        function getSongMeta() {
+            try {
+                var d = JSON.parse(document.getElementById("player").getAttribute("song-data"));
+                if (d === null) {
+                    return {
+                        name: ""
+                    };
+                } else {
+                    return d;
+                }
+            } catch {
+                return {
+                    name: ""
+                };
+            }
+        }
+        function setSongMeta(d) {
+            document.getElementById("player").setAttribute("song-data", JSON.stringify(d));
+        }
+        var nextSongData = null;
+        document.getElementById("player").onended = () => {
+            hideAlbumArt();
+            document.getElementById("s1").src = "audio/"+nextSongData.id;
+            document.getElementById("player").load();
+            setSongMeta(nextSongData);
+            setTimeout(() => {
+                document.getElementById("player").play();
+            }, 800);
+        }
+        const refreshSearch = (chkKey, e) => {
+            var v = document.getElementById("search").value;
+            if (chkKey && e.key !== "Enter") {
+                v = v + e.key;
+            }
+            fetch("/search/"+encodeURIComponent(v))
+            .then(r => {
+                if (r.status === 200) {
+                    r.json()
+                    .then(r => {
+                        document.getElementById("results").innerHTML = "";
+                        var container = document.createElement("div");
+                        r.forEach(el => {
+                            var lcon = document.createElement("div");
+                            lcon.style.display = "flex";
+                            lcon.style.alignItems = "center";
+                            lcon.style.padding = "5px";
+                            lcon.style.cursor = "pointer";
+                            lcon.onclick = () => {
+                                try { document.getElementById("player").pause() } catch { }
+                                hideAlbumArt();
+                                setSongMeta(el);
+                                setTimeout(() => {
+                                    document.getElementById("s1").src = "audio/"+el.id;
+                                    document.getElementById("player").load();
+                                    document.getElementById("player").play();
+                                }, 300);
+                            }
+                            var img = document.createElement("img");
+                            img.src = "/art/"+el.art
+                            img.style.width = "60px";
+                            img.style.height = "60px";
+                            img.style.borderRadius = "6px";
+                            var name = document.createElement("span");
+                            name.innerText = el.name
+                            name.style.paddingLeft = "10px";
+                            lcon.appendChild(img);
+                            lcon.appendChild(name);
+                            container.appendChild(lcon);
+                        });
+                        document.getElementById("results").appendChild(container);
+                    })
+                } else {
+                    document.getElementById("results").innerHTML = "";
+                }
+            })
+        }
+        document.getElementById("search").onkeypress = (e) => {
+            refreshSearch(true, e)
+        };
+        document.getElementById("search").onkeydown = (e) => {
+            refreshSearch(false, e)
+        };
+    </script>
+</body>
+</html>

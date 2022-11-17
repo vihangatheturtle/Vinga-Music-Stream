@@ -1,0 +1,23 @@
+{
+  "name": "vinga-music-stream",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "add": "node add.js",
+    "api": "node api.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "fastest-levenshtein": "^1.0.16",
+    "fluent-ffmpeg": "^2.1.2",
+    "inquirer": "^8.0.0",
+    "request": "^2.88.2",
+    "uuid": "^9.0.0",
+    "youtube-dl-exec": "^2.1.8",
+    "ytdl-core": "^4.11.2"
+  }
+}
