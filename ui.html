@@ -212,7 +212,8 @@
     </div>
     <input id="search">
     <div id="results"></div>
-    <button id="create-playlist-button">Create Playlist</button><br><br>
+    <button id="create-playlist-button">Create Playlist</button>
+    <button id="export-data-button">Export User Data</button><br><br>
     <div id="playlists"></div>
     <img id="art">
     <span id="name"></span>
@@ -346,6 +347,9 @@
                 finishLoad();
             });
         }
+        document.getElementById("export-data-button").onclick = () => {
+            exportSavedData();
+        }
         document.getElementById("PM-CONTENT-COVER").onclick = () => {
             document.getElementById("PM-ADD-SONG-CLICK-COVER").click();
             document.getElementById("PM-CONTENT-COVER").style.display = "none";
@@ -361,6 +365,16 @@
             document.getElementById("PM-ADD-SONG-BUTTON").style.display = "none";
             document.getElementById("PM-ADD-SONG-CLICK-COVER").style.display = "block";
         }
+        function downloadToFile(content, filename, contentType) {
+            const a = document.createElement('a');
+            const file = new Blob([content], {type: contentType});
+            
+            a.href= URL.createObjectURL(file);
+            a.download = filename;
+            a.click();
+
+            URL.revokeObjectURL(a.href);
+        };
         function refreshPlaylists() {
             var holders = document.createElement("div");
 
@@ -692,6 +706,8 @@
             const compressed = LZString.compress(exportData)
 
             console.log("Exporting locally saved user data (original length:", exportData.length+", compressed:", compressed.length+",", Math.floor((compressed.length / exportData.length)*100)+"% compression)")
+
+            downloadToFile(compressed, "user-export.vmsdata", "text/plain")
         }
         function getSongMeta() {
             try {
