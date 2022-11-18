@@ -158,6 +158,20 @@ server.get("/ui", (req, res) => {
     res.status(200).send(fs.readFileSync("ui.html").toString())
 });
 
+server.post("/getsongs", (req, res) => {
+    const songIds = req.body.songs;
+    var responseList = [];
+    for (let i = 0; i < songIds.length; i++) {
+        for (let ii = 0; ii < Object.keys(db).length; ii++) {
+            const song = db[Object.keys(db)[ii]];
+            if (song.id === songIds[i]) {
+                responseList.push(song);
+            }
+        }
+    }
+    res.status(200).json(responseList);
+});
+
 server.get("/random", (req, res) => {
     var slist = Object.keys(db);
     var s = slist[Math.floor(Math.random()*slist.length)];
