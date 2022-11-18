@@ -40,7 +40,7 @@
 
         #progress {
             background-color: rgba(255, 255, 255, 0.15);
-            width: calc(100% - 100px);
+            width: calc(100% - 300px);
             height: 8px;
             position: absolute;
             bottom: 50px;
@@ -71,9 +71,55 @@
             cursor: pointer;
         }
 
-        #song-time {
+        #volume-icon {
+            position: absolute;
+            bottom: 42.5px;
+            right: 210px;
+        }
+
+        #volume {
+            background-color: rgba(255, 255, 255, 0.15);
+            width: 150px;
+            height: 8px;
+            position: absolute;
+            bottom: 50px;
+            right: 50px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #volume-tracker {
+            background-color: royalblue;
+            border-radius: 4px;
+            width: 0.6%;
+            height: 100%;
+            transition: .3s;
+        }
+
+        #volume-dragger {
+            width: 12px;
+            height: 12px;
+            background-color: white;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            margin: auto;
+            left: 0%;
+            border-radius: 50%;
+            transition: .3s;
+            cursor: pointer;
+        }
+
+        #volume-value {
             position: absolute;
             right: 55px;
+            bottom: 60px;
+        }
+
+        #song-time {
+            position: absolute;
+            right: 255px;
+            margin-bottom: 5px;
         }
 
         #album-art {
@@ -176,6 +222,10 @@
             background: rgba(0, 0, 0, 0.5);
         }
 
+        #volume-icon {
+            filter: invert();
+        }
+
         .PLAYLIST-REMOVE-LISTITEM:hover {
             opacity: 1 !important;
         }
@@ -208,6 +258,12 @@
                 <div id="progress-tracker"></div>
                 <div id="dragger"></div>
             </div>
+            <div id="volume-icon"></div>
+            <span id="volume-value">20%</span>
+            <div id="volume">
+                <div id="volume-tracker"></div>
+                <div id="volume-dragger"></div>
+            </div>
         </div>
     </div>
     <input id="search">
@@ -235,6 +291,9 @@
     </div>
 
     <script>
+        const volHigh = `<svg width="24px" height="24px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g data-name="Layer 2"><g data-name="volume-up"><path d="M18.28 8.37a1 1 0 1 0-1.56 1.26 4 4 0 0 1 0 4.74A1 1 0 0 0 17.5 16a1 1 0 0 0 .78-.37 6 6 0 0 0 0-7.26z"/><path d="M19.64 5.23a1 1 0 1 0-1.28 1.54A6.8 6.8 0 0 1 21 12a6.8 6.8 0 0 1-2.64 5.23 1 1 0 0 0-.13 1.41A1 1 0 0 0 19 19a1 1 0 0 0 .64-.23A8.75 8.75 0 0 0 23 12a8.75 8.75 0 0 0-3.36-6.77zm-5.17-2.11a1 1 0 0 0-1 0L7 7.57H2a1 1 0 0 0-1 1v6.86a1 1 0 0 0 1 1h5l6.41 4.4A1.06 1.06 0 0 0 14 21a1 1 0 0 0 1-1V4a1 1 0 0 0-.53-.88z"/></g></g></svg>`;
+        const volMed = `<svg width="24px" height="24px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g data-name="Layer 2"><path d="M20.78 8.37a1 1 0 1 0-1.56 1.26 4 4 0 0 1 0 4.74A1 1 0 0 0 20 16a1 1 0 0 0 .78-.37 6 6 0 0 0 0-7.26zm-4.31-5.25a1 1 0 0 0-1 0L9 7.57H4a1 1 0 0 0-1 1v6.86a1 1 0 0 0 1 1h5l6.41 4.4A1.06 1.06 0 0 0 16 21a1 1 0 0 0 1-1V4a1 1 0 0 0-.53-.88z" data-name="volume-down"/></g></svg>`;
+        const volOff = `<svg width="24px" height="24px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g data-name="Layer 2"><path d="M17 21a1.06 1.06 0 0 1-.57-.17L10 16.43H5a1 1 0 0 1-1-1V8.57a1 1 0 0 1 1-1h5l6.41-4.4A1 1 0 0 1 18 4v16a1 1 0 0 1-1 1z" data-name="volume-mute"/></g></svg>`;
         var noProgressUpdate = false;
         var likeButtonDisabled = true;
         var likes = [];
@@ -452,6 +511,16 @@
         function loadSavedData() {
             likes = localStorage.getItem("likes") === null ? [] : JSON.parse(LZString.decompress(localStorage.getItem("likes")));
             playlists = localStorage.getItem("playlists") === null ? [] : JSON.parse(LZString.decompress(localStorage.getItem("playlists")));
+            var volume = localStorage.getItem("volume") === null ? 1 : parseFloat(LZString.decompress(localStorage.getItem("volume")));
+
+            if (!isNaN(volume)) document.getElementById("player").volume = volume;
+            var volOffset = document.getElementById("volume").clientWidth * volume;
+            document.getElementById("volume-tracker").style.width = volOffset + 8;
+            document.getElementById("volume-dragger").style.left = volOffset - 2;
+            if (volume > 0) document.getElementById("volume-icon").innerHTML = volOff;
+            if (volume > 0.33) document.getElementById("volume-icon").innerHTML = volMed;
+            if (volume > 0.66) document.getElementById("volume-icon").innerHTML = volHigh;
+            document.getElementById("volume-value").innerText = Math.round(volume * 100) + "%";
             
             refreshPlaylists();
         }
@@ -546,6 +615,24 @@
                 document.getElementById("player").currentTime = (document.getElementById("player").duration * newP)
             }
         }
+        document.getElementById("volume").onclick = (e) => {
+            var offset = 100 + document.getElementById("progress").clientWidth + 6
+            var elmnt = document.getElementById("volume-dragger");
+            var track = document.getElementById("volume");
+            var handle = document.getElementById("volume-tracker");
+            var movement = e.clientX - offset;
+            if (movement < 0) {
+                movement = 0;
+            } else if (movement > (track.clientWidth - 12)) {
+                movement = track.clientWidth - 12;
+            }
+            elmnt.style.left = movement + "px";
+            handle.style.width = (movement + 6) + "px";
+            var newP = (elmnt.style.left.split("px")[0] / (track.clientWidth - 12));
+            if (newP === 0) newP = 0.01
+            document.getElementById("player").volume = newP;
+            saveData("volume", newP.toString());
+        }
         function refreshSongTime() {
             if (!isNaN(document.getElementById("player").duration)) {
                 var sec = Math.floor(document.getElementById("player").currentTime);
@@ -610,8 +697,12 @@
             document.getElementById("album-art").style.opacity = 1;
             document.getElementById("album-art").style.top = "-220px";
         }
-        function dragElement(elmnt, track, handle, setPTime = false) {
+        function dragElement(elmnt, track, handle, setPTime = false, isVolumeDragger = false) {
             elmnt.onmousedown = dragMouseDown;
+
+            var offset = 50;
+            
+            if (isVolumeDragger) offset = (2 * offset) + document.getElementById("progress").clientWidth + 6;
 
             function dragMouseDown(e) {
                 if (setPTime) {
@@ -623,7 +714,7 @@
                 e.preventDefault();
                 document.onmouseup = closeDragElement;
                 document.onmousemove = elementDrag;
-                noProgressUpdate = true;
+                if (!isVolumeDragger) noProgressUpdate = true;
                 elmnt.style.transition = "0s";
                 handle.style.transition = "0s";
             }
@@ -631,7 +722,7 @@
             function elementDrag(e) {
                 e = e || window.event;
                 e.preventDefault();
-                var movement = e.clientX - 50;
+                var movement = e.clientX - offset;
                 if (movement < 0) {
                     movement = 0;
                 } else if (movement > (track.clientWidth - 12)) {
@@ -639,6 +730,15 @@
                 }
                 elmnt.style.left = movement + "px"
                 handle.style.width = (movement + 6) + "px"
+                if (isVolumeDragger) {
+                    var newP = (elmnt.style.left.split("px")[0] / (track.clientWidth - 12));
+                    if (newP === 0) newP = 0.01;
+                    document.getElementById("player").volume = newP;
+                    if (newP > 0) document.getElementById("volume-icon").innerHTML = volOff;
+                    if (newP > 0.33) document.getElementById("volume-icon").innerHTML = volMed;
+                    if (newP > 0.66) document.getElementById("volume-icon").innerHTML = volHigh;
+                    document.getElementById("volume-value").innerText = Math.round(newP * 100) + "%";
+                }
             }
 
             function closeDragElement() {
@@ -647,6 +747,11 @@
 
                     if (setPTime) {
                         document.getElementById("player").currentTime = (document.getElementById("player").duration * newP)
+                    }
+
+                    if (isVolumeDragger) {
+                        if (newP === 0) newP = 0.01;
+                        saveData("volume", newP.toString());
                     }
                 } catch { }
 
@@ -658,6 +763,7 @@
             }
         }
         dragElement(document.getElementById("dragger"), document.getElementById("progress"), document.getElementById("progress-tracker"), true);
+        dragElement(document.getElementById("volume-dragger"), document.getElementById("volume"), document.getElementById("volume-tracker"), false, true)
         document.getElementById("player").onplay = () => {
             showAlbumArt();
             function setRandomNextSong() {
