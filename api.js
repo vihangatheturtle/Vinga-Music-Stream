@@ -69,14 +69,16 @@ function similarity(s1, s2) {
     return (longerLength - editDistance(longer, shorter)) / parseFloat(longerLength);
 }
 
-function queryLocalDB(query) {
+function queryLocalDB(query, forceUseData = false) {
+    var simconst = similarityConst;
+    if (forceUseData) simconst = (similarityConst / 4) * 3;
     query = query.toLowerCase();
     var matches = {};
     for (let i = 0; i < Object.keys(db).length; i++) {
         const key = Object.keys(db)[i];
         const title = db[key].name.toLowerCase();
         var d = similarity(title, query);
-        if (d > similarityConst) {
+        if (d > simconst) {
             matches[title] = db[key];
             continue;
         }
@@ -84,7 +86,7 @@ function queryLocalDB(query) {
             if (title.includes(" - ")) {
                 var name = title.split(" - ")[1];
                 var d = similarity(name, query);
-                if (!Object.keys(matches).includes(title) && d > similarityConst) {
+                if (!Object.keys(matches).includes(title) && d > simconst) {
                     matches[title] = db[key];
                     continue;
                 }
@@ -94,7 +96,7 @@ function queryLocalDB(query) {
             if (title.includes(" - ")) {
                 var name = title.split(" - ")[0];
                 var d = similarity(name, query);
-                if (!Object.keys(matches).includes(title) && d > similarityConst) {
+                if (!Object.keys(matches).includes(title) && d > simconst) {
                     matches[title] = db[key];
                     continue;
                 }
@@ -104,7 +106,7 @@ function queryLocalDB(query) {
             if (title.includes(" ft. ")) {
                 var name = title.split(" ft. ")[0];
                 var d = similarity(name, query);
-                if (!Object.keys(matches).includes(title) && d > similarityConst) {
+                if (!Object.keys(matches).includes(title) && d > simconst) {
                     matches[title] = db[key];
                     continue;
                 }
@@ -114,7 +116,7 @@ function queryLocalDB(query) {
             if (title.includes(" ft. ")) {
                 var name = title.split(" ft. ")[1];
                 var d = similarity(name, query);
-                if (!Object.keys(matches).includes(title) && d > similarityConst) {
+                if (!Object.keys(matches).includes(title) && d > simconst) {
                     matches[title] = db[key];
                     continue;
                 }
@@ -125,7 +127,7 @@ function queryLocalDB(query) {
                 var name = title.split(" ft. ")[0].split(" - ")[1];
                 console.log(name)
                 var d = similarity(name, query);
-                if (!Object.keys(matches).includes(title) && d > similarityConst) {
+                if (!Object.keys(matches).includes(title) && d > simconst) {
                     matches[title] = db[key];
                     continue;
                 }
@@ -136,7 +138,7 @@ function queryLocalDB(query) {
                 var obj = db[key].tags;
                 for (let a = 0; a < obj.length; a++) {
                     var d = similarity(obj[a], query);
-                    if (!Object.keys(matches).includes(title) && d > similarityConst) {
+                    if (!Object.keys(matches).includes(title) && d > simconst) {
                         matches[title] = db[key];
                         continue;
                     }
@@ -152,6 +154,11 @@ function queryLocalDB(query) {
         if (m != c) {
             results.push(matches[m]);
         }
+    }
+    if (results.length === 0) {
+        return queryLocalDB(query, true);
+    } else if (results[0] === null) {
+        return queryLocalDB(query, true);
     }
     return results;
 }
