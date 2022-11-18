@@ -3,6 +3,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/compression"></script>
     <style>
         html,
         body {
@@ -365,6 +366,8 @@
 
             document.getElementById("playlists").innerHTML = "";
 
+            if (playlists.length === 0) return;
+
             for (let i = 0; i < playlists.length; i++) {
                 const pl = playlists[i];
 
@@ -433,8 +436,8 @@
             document.getElementById("playlists").appendChild(holders);
         }
         function loadSavedData() {
-            likes = localStorage.getItem("likes") === null ? [] : JSON.parse(localStorage.getItem("likes"));
-            playlists = localStorage.getItem("playlists") === null ? [] : JSON.parse(localStorage.getItem("playlists"));
+            likes = localStorage.getItem("likes") === null ? [] : JSON.parse(LZString.decompress(localStorage.getItem("likes")));
+            playlists = localStorage.getItem("playlists") === null ? [] : JSON.parse(LZString.decompress(localStorage.getItem("playlists")));
             
             refreshPlaylists();
         }
@@ -448,6 +451,9 @@
                 }
             }
             return isLiked;
+        }
+        function saveData(key, data) {
+            localStorage.setItem(key, LZString.compress(data));
         }
         function toggleLikeCurrentSong() {
             if (likeButtonDisabled) return;
@@ -464,13 +470,13 @@
             if (!complete) {
                 likes.push(songId);
             }
-            localStorage.setItem("likes", JSON.stringify(likes));
+            saveData("likes", JSON.stringify(likes));
             likeButtonDisabled = false;
             refreshSongDataDisplays();
         }
         loadSavedData();
         function savePlaylists() {
-            localStorage.setItem("playlists", JSON.stringify(playlists));
+            saveData("playlists", JSON.stringify(playlists));
         }
         function createPlaylist(name) {
             var playlistData = {
@@ -674,6 +680,18 @@
                 document.getElementById("progress-tracker").style.width = percentPlayed + "%"
                 document.getElementById("dragger").style.left = (percentPlayed - 0.6) + "%"
             }
+        }
+        function exportSavedData() {
+            loadSavedData();
+
+            const exportData = JSON.stringify({
+                likes: likes,
+                playlists: playlists
+            })
+            
+            const compressed = LZString.compress(exportData)
+
+            console.log("Exporting locally saved user data (original length:", exportData.length+", compressed:", compressed.length+",", Math.floor((compressed.length / exportData.length)*100)+"% compression)")
         }
         function getSongMeta() {
             try {

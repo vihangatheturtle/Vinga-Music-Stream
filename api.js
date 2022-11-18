@@ -160,6 +160,11 @@ server.get("/ui", (req, res) => {
     res.status(200).send(fs.readFileSync("ui.html").toString())
 });
 
+server.get("/compression", (req, res) => {
+    res.setHeader("content-type", "text/javascript")
+    res.status(200).send(fs.readFileSync("lz-string.min.js").toString())
+})
+
 server.post("/getsongs", (req, res) => {
     const songIds = req.body.songs;
     var responseList = [];
