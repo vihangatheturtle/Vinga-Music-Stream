@@ -13,7 +13,9 @@ var db = {};
 if (!fs.existsSync("db.json")) {
     fs.writeFileSync("db.json", "{}");
 } else {
-    db = JSON.parse(fs.readFileSync("db.json").toString());
+    setInterval(() => {
+        db = JSON.parse(fs.readFileSync("db.json").toString());
+    }, 5e3);
 }
 
 const PORT = 80;
