@@ -655,6 +655,7 @@
                 // console.log(playerQueue.nextPointer, playerQueue.maxPointer);
                 if (playerQueue.nextPointer >= playerQueue.maxPointer) {
                     setRandomNextSong();
+                    playerQueue.active = false;
                 } else {
                     nextSongData = playerQueue.queue[playerQueue.nextPointer];
                     playerQueue.nextPointer = playerQueue.nextPointer+1;
