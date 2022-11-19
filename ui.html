@@ -612,7 +612,10 @@
                 elmnt.style.left = movement + "px";
                 handle.style.width = (movement + 6) + "px";
                 var newP = (elmnt.style.left.split("px")[0] / (track.clientWidth - 12));
-                document.getElementById("player").currentTime = (document.getElementById("player").duration * newP)
+                if (newP > 0) document.getElementById("volume-icon").innerHTML = volOff;
+                if (newP > 0.33) document.getElementById("volume-icon").innerHTML = volMed;
+                if (newP > 0.66) document.getElementById("volume-icon").innerHTML = volHigh;
+                document.getElementById("volume-value").innerText = Math.round(newP * 100) + "%";
             }
         }
         document.getElementById("volume").onclick = (e) => {
