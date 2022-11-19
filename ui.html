@@ -314,7 +314,7 @@
             }
             savePlaylists()
         }
-        function openPlaylistScreen(id) {
+        function openPlaylistScreen(id, isEditable, useLikesData) {
             var pl = null;
             for (let i = 0; i < playlists.length; i++) {
                 if (playlists[i].id === id) {
@@ -323,6 +323,11 @@
                 }
             }
             if (pl === null) return;
+
+            console.log(pl)
+
+            if (pl.editable) document.getElementById("PM-ADD-SONG-BUTTON").style.display = "block";
+            else document.getElementById("PM-ADD-SONG-BUTTON").style.display = "none";
 
             document.getElementById("PM-NAME").innerText = pl.name;
 
@@ -340,7 +345,7 @@
                     'content-type': 'application/json'
                 },
                 body: JSON.stringify({
-                    songs: pl.songs
+                    songs: useLikesData ? likes : pl.songs
                 })
             })
             .then(r => r.json())
@@ -393,13 +398,14 @@
                     removeIcon.style.transition = ".2s";
                     removeIcon.className = "PLAYLIST-REMOVE-LISTITEM";
                     removeIcon.onclick = () => {
+                        if (!isEditable) return;
                         removeSongFromPlaylistWithID(pl.id, el.id);
                         openPlaylistScreen(pl.id);
                     }
                     lcon.appendChild(img);
                     lcon.appendChild(name);
                     lconC.appendChild(lcon);
-                    lconC.appendChild(removeIcon);
+                    if (isEditable) lconC.appendChild(removeIcon);
                     container.appendChild(lconC);
                 }
                 resultsEl.appendChild(container);
@@ -456,7 +462,7 @@
                 holder.style.userSelect = "none";
                 holder.className = "playlist-data-holder";
                 holder.onclick = () => {
-                    openPlaylistScreen(pl.id);
+                    openPlaylistScreen(pl.id, pl.editable, pl.tags.includes("useLikesData"));
                 }
                 if (i === 0) {
                     holder.style.marginTop = "0";
@@ -521,6 +527,45 @@
             if (volume > 0.33) document.getElementById("volume-icon").innerHTML = volMed;
             if (volume > 0.66) document.getElementById("volume-icon").innerHTML = volHigh;
             document.getElementById("volume-value").innerText = Math.round(volume * 100) + "%";
+
+            var doesLikedPlaylistExist = false;
+
+            for (let i = 0; i < playlists.length; i++) {
+                if (playlists[i].id === "liked") {
+                    doesLikedPlaylistExist = true;
+                    break;
+                }
+            }
+
+            var changed = false;
+            for (let i = 0; i < playlists.length; i++) {
+                if (!Object.keys(playlists[i]).includes("tags")) {
+                    playlists[i].tags = [];
+                    changed = true;
+                }
+                if (!Object.keys(playlists[i]).includes("editable")) {
+                    playlists[i].editable = true;
+                    changed = true;
+                }
+                if (playlists[i].id === "liked" && !playlists[i].tags.includes("useLikesData")) {
+                    playlists[i].tags.push("useLikesData");
+                    changed = true;
+                }
+            }
+            if (changed) {
+                saveData("playlists", JSON.stringify(playlists));
+            }
+
+
+            if (!doesLikedPlaylistExist) {
+                console.log("Creating a \"liked\" playlist");
+                createPlaylist("Liked songs", {
+                    id: "liked",
+                    image: "/cdn/liked_playlist.png",
+                    tags: ["useLikesData"],
+                    editable: false
+                })
+            }
             
             refreshPlaylists();
         }
@@ -561,15 +606,24 @@
         function savePlaylists() {
             saveData("playlists", JSON.stringify(playlists));
         }
-        function createPlaylist(name) {
+        function createPlaylist(name, dataOverride = {}) {
             var playlistData = {
                 name: name,
                 description: null,
                 image: null,
                 createdAt: new Date().getTime(),
                 id: Math.round(Math.random() * 9e9),
+                editable: true,
                 songs: []
             }
+            
+            if (typeof dataOverride === "object") {
+                for (let i = 0; i < Object.keys(dataOverride).length; i++) {
+                    playlistData[Object.keys(dataOverride)[i]] = dataOverride[Object.keys(dataOverride)[i]];
+                }
+            }
+
+            console.log(playlistData)
             playlists.push(playlistData);
             savePlaylists();
             refreshPlaylists();
