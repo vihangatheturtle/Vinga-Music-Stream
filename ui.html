@@ -352,7 +352,7 @@
                     // Set the responseType to blob
                     xhr.responseType = "blob";
 
-                    xhr.addEventListener("load", function () {
+                    xhr.addEventListener("load", async function () {
                         console.log(xhr.status)
                         if (xhr.status === 200 || xhr.status === 304 || xhr.status === 206) {
                             console.log("Track retrieved");
@@ -361,8 +361,10 @@
                             blob = xhr.response;
                             console.log("Blob:" + blob);
 
+                            var arrayBuffer = await blob.arrayBuffer();
+
                             // Put the received blob into IndexedDB
-                            putAudioInDb(blob);
+                            putAudioInDb(arrayBuffer);
                         }
                     }, false);
                     // Send XHR
@@ -381,8 +383,11 @@
                     // Retrieve the file that was just stored
                     transaction.objectStore("audio").get(id).onsuccess = async function (event) {
                         var trackFile = event.target.result;
+
+                        var b = new Blob([trackFile])
+
                         var URL = window.URL || window.webkitURL;
-                        var trackURL = URL.createObjectURL(trackFile);
+                        var trackURL = URL.createObjectURL(b);
 
                         fetch("/getsongs", {
                             "headers": {
@@ -466,7 +471,7 @@
                     // Set the responseType to blob
                     xhr.responseType = "blob";
 
-                    xhr.addEventListener("load", function () {
+                    xhr.addEventListener("load", async function () {
                         console.log(xhr.status)
                         if (xhr.status === 200 || xhr.status === 304 || xhr.status === 206) {
                             console.log("Track retrieved");
@@ -475,8 +480,10 @@
                             blob = xhr.response;
                             console.log("Blob:" + blob);
 
+                            var arrayBuffer = await blob.arrayBuffer();
+
                             // Put the received blob into IndexedDB
-                            putImageInDb(blob);
+                            putImageInDb(arrayBuffer);
                         }
                     }, false);
                     // Send XHR
@@ -548,10 +555,12 @@
                     const tx = transaction.objectStore("images").get(id)
                     
                     tx.onsuccess = async function (event) {
-                        console.log(event)
                         var trackFile = event.target.result;
+
+                        var b = new Blob([trackFile]);
+
                         var URL = window.URL || window.webkitURL;
-                        var trackURL = URL.createObjectURL(trackFile);
+                        var trackURL = URL.createObjectURL(b);
                         
                         var data = offlineData[id];
 
@@ -614,7 +623,10 @@
                     transaction.objectStore("audio").get(id).onsuccess = async function (event) {
                         var trackFile = event.target.result;
                         var URL = window.URL || window.webkitURL;
-                        var trackURL = URL.createObjectURL(trackFile);
+
+                        var b = new Blob([trackFile])
+
+                        var trackURL = URL.createObjectURL(b);
                         
                         var data = offlineData[id];
 
