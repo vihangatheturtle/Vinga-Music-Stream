@@ -384,7 +384,7 @@
                         var URL = window.URL || window.webkitURL;
                         var trackURL = URL.createObjectURL(trackFile);
 
-                        fetch("http://localhost/getsongs", {
+                        fetch("/getsongs", {
                             "headers": {
                                 "content-type": "application/json"
                             },
@@ -805,32 +805,6 @@
                             cb(dlslist);
                         }
                     }
-
-                    // Retrieve the file that was just stored
-                    // transaction.objectStore("audio").get(id).onsuccess = async function (event) {
-                    //     var trackFile = event.target.result;
-                    //     var URL = window.URL || window.webkitURL;
-                    //     var trackURL = URL.createObjectURL(trackFile);
-
-                    //     fetch("http://localhost/getsongs", {
-                    //         "headers": {
-                    //             "content-type": "application/json"
-                    //         },
-                    //         "body": JSON.stringify({
-                    //             songs: [id]
-                    //         }),
-                    //         "method": "POST",
-                    //     }).then(r => r.json()).then(r => {
-                    //         if (r.length > 0 && r[0] !== null) {
-                    //             setSongMeta(r[0]);
-                    //             document.getElementById("s1").src = trackURL;
-                    //             document.getElementById("player").load();
-                    //             document.getElementById("player").play();
-                                
-                    //             isUsingBlob = true;
-                    //         }
-                    //     });
-                    // };
                 };
 
             request.onerror = function (event) {
