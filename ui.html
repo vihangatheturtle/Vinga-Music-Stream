@@ -1168,6 +1168,15 @@
                     editable: false
                 })
             }
+
+            try {
+                if (navigator.storage && navigator.storage.persist) {
+                    navigator.storage.persist()
+                    .then(r => {
+                        console.log(`Persistent storage status: ${r}`);
+                    })
+                }
+            } catch { }
             
             refreshPlaylists();
         }
